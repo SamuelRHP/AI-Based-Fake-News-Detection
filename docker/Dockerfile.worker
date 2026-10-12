@@ -47,3 +47,4 @@ RUN useradd -m -u 1000 appuser && \
 USER appuser
 
 CMD ["celery", "-A", "backend.app.workers.celery_app", "worker", "--loglevel=info"]
+

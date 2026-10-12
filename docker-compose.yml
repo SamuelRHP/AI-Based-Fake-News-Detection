@@ -120,3 +120,4 @@ volumes:
 networks:
   fakenews_network:
     driver: bridge
+
