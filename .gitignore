@@ -90,6 +90,8 @@ pnpm-debug.log*
 
 # Database & Celery state
 *.sqlite3
+*.sqlite
+*.db
 celerybeat-schedule
 celerybeat.pid
 
