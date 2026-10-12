@@ -1,0 +1,32 @@
+stages:
+  prepare:
+    cmd: python -c "from fake_news_detector.data.loader import create_synthetic_news_dataset; df = create_synthetic_news_dataset(50); df.to_csv('data/raw/news_dataset.csv', index=False)"
+    params:
+      - prepare.seed_samples
+    outs:
+      - data/raw/news_dataset.csv
+
+  train:
+    cmd: python -m fake_news_detector.pipelines.train
+    deps:
+      - data/raw/news_dataset.csv
+      - src/fake_news_detector/pipelines/train.py
+      - src/fake_news_detector/models/baseline.py
+    params:
+      - train.max_features
+      - train.c_regularization
+    outs:
+      - artifacts/models/baseline_model.joblib
+
+  evaluate:
+    cmd: python -m fake_news_detector.pipelines.evaluate
+    deps:
+      - artifacts/models/baseline_model.joblib
+      - src/fake_news_detector/pipelines/evaluate.py
+    params:
+      - evaluate.fake_threshold_high
+      - evaluate.fake_threshold_low
+    metrics:
+      - artifacts/models/metrics.json:
+          cache: false
+

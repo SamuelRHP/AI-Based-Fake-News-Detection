@@ -1,0 +1,21 @@
+prepare:
+  seed_samples: 50
+  raw_data_path: data/raw/news_dataset.csv
+  processed_train_path: data/processed/train.csv
+  processed_val_path: data/processed/val.csv
+  test_size: 0.2
+  random_state: 42
+
+train:
+  model_type: baseline
+  max_features: 5000
+  ngram_min: 1
+  ngram_max: 2
+  c_regularization: 1.0
+  random_state: 42
+
+evaluate:
+  fake_threshold_high: 0.70
+  fake_threshold_low: 0.30
+  metrics_output: artifacts/models/metrics.json
+
