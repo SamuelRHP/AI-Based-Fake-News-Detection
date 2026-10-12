@@ -41,4 +41,3 @@ class BackendSettings(BaseSettings):
 
 
 backend_settings = BackendSettings()
-

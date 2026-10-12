@@ -1,5 +1,7 @@
-pandas
-numpy
-scikit-learn
-matplotlib
-jupyter
+# Production dependencies are managed via pyproject.toml with uv.
+# To install all dependencies in development:
+#   uv pip install -e ".[dev]"
+# Or via standard pip:
+#   pip install -e ".[dev]"
+
+-e .[dev]

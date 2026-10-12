@@ -11,4 +11,3 @@ class HealthResponse(BaseModel):
     active_model: str
     database_connected: bool
     version: str
-

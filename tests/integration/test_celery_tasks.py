@@ -19,4 +19,3 @@ def test_predict_batch_task_synchronous():
     assert first_res["status"] == "success"
     assert "prediction" in first_res
     assert first_res["prediction"]["verdict"] in ("Fake", "Real", "Uncertain")
-

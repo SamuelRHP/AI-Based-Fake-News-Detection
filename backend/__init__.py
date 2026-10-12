@@ -1,2 +1,1 @@
 """Backend root package."""
-

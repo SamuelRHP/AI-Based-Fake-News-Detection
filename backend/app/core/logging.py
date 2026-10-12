@@ -11,4 +11,3 @@ def setup_logging(log_level: str = "INFO") -> None:
         format="%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
-

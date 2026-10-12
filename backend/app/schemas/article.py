@@ -42,4 +42,3 @@ class ArticleResponse(BaseModel):
     cleaned_text: str
 
     model_config = {"from_attributes": True}
-
