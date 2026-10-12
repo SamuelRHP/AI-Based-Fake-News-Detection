@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # ==================== PostgreSQL Database ====================
+  postgres:
+    image: postgres:16-alpine
+    container_name: fakenews_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-fakenews_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-fakenews_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fakenews_network
+
+  # ==================== Redis Cache & Celery Broker ====================
+  redis:
+    image: redis:7-alpine
+    container_name: fakenews_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fakenews_network
+
+  # ==================== MLflow Tracking Server ====================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.2
+    container_name: fakenews_mlflow
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    command: mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root /mlartifacts --host 0.0.0.0 --port 5000
+    volumes:
+      - mlflow_data:/mlartifacts
+    networks:
+      - fakenews_network
+
+  # ==================== FastAPI Backend API ====================
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: fakenews_backend
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-fakenews_db}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      FAKE_THRESHOLD_HIGH: ${FAKE_THRESHOLD_HIGH:-0.70}
+      FAKE_THRESHOLD_LOW: ${FAKE_THRESHOLD_LOW:-0.30}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fakenews_network
+
+  # ==================== Celery Async Worker ====================
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: fakenews_worker
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-fakenews_db}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fakenews_network
+
+  # ==================== React Frontend Web ====================
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: fakenews_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - fakenews_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  mlflow_data:
+
+networks:
+  fakenews_network:
+    driver: bridge
