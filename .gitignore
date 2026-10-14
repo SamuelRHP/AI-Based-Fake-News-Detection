@@ -66,6 +66,7 @@ coverage.xml
 data/raw/*.csv
 data/processed/*.csv
 artifacts/models/*.joblib
+artifacts/models/*.json
 /data/raw/**
 !/data/raw/**/
 !/data/raw/**/.gitkeep
