@@ -1,5 +1,6 @@
 """Evaluation pipeline for scoring trained models against evaluation sets."""
 
+import argparse
 import json
 import logging
 from pathlib import Path
@@ -48,6 +49,15 @@ def run_evaluation_pipeline(
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    eval_metrics = run_evaluation_pipeline()
+    parser = argparse.ArgumentParser(description="Evaluate the trained baseline model.")
+    parser.add_argument(
+        "--data",
+        default="data/processed/val.csv",
+        help="Held-out CSV (written by the train step). Never evaluate on training data.",
+    )
+    parser.add_argument("--out", default="artifacts/models/metrics.json")
+    args = parser.parse_args()
+
+    eval_metrics = run_evaluation_pipeline(eval_data_path=args.data, output_metrics_file=args.out)
     print("Evaluation Pipeline Results:")
-    print(eval_metrics)
+    print(json.dumps(eval_metrics, indent=2))

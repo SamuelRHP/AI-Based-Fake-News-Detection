@@ -63,6 +63,9 @@ coverage.xml
 .ruff_cache/
 
 # DVC and Local Data/Models
+data/raw/*.csv
+data/processed/*.csv
+artifacts/models/*.joblib
 /data/raw/**
 !/data/raw/**/
 !/data/raw/**/.gitkeep

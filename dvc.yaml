@@ -1,32 +1,27 @@
+# The synthetic "prepare" stage was removed: it overwrote the dataset with 50 fake rows.
+# Create data/raw/news_dataset.csv yourself with:  python scripts/prepare_dataset.py --isot-dir <folder>
 stages:
-  prepare:
-    cmd: python -c "from fake_news_detector.data.loader import create_synthetic_news_dataset; df = create_synthetic_news_dataset(50); df.to_csv('data/raw/news_dataset.csv', index=False)"
-    params:
-      - prepare.seed_samples
-    outs:
-      - data/raw/news_dataset.csv
-
   train:
-    cmd: python -m fake_news_detector.pipelines.train
+    cmd: python -m fake_news_detector.pipelines.train --data data/raw/news_dataset.csv --val-out data/processed/val.csv --metrics-out artifacts/models/train_metrics.json
     deps:
       - data/raw/news_dataset.csv
       - src/fake_news_detector/pipelines/train.py
       - src/fake_news_detector/models/baseline.py
     params:
       - train.max_features
+      - train.ngram_min
+      - train.ngram_max
       - train.c_regularization
     outs:
       - artifacts/models/baseline_model.joblib
+      - data/processed/val.csv
 
   evaluate:
-    cmd: python -m fake_news_detector.pipelines.evaluate
+    cmd: python -m fake_news_detector.pipelines.evaluate --data data/processed/val.csv --out artifacts/models/metrics.json
     deps:
       - artifacts/models/baseline_model.joblib
+      - data/processed/val.csv
       - src/fake_news_detector/pipelines/evaluate.py
-    params:
-      - evaluate.fake_threshold_high
-      - evaluate.fake_threshold_low
     metrics:
       - artifacts/models/metrics.json:
           cache: false
-
