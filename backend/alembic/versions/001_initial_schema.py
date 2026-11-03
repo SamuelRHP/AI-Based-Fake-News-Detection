@@ -45,7 +45,7 @@ def upgrade() -> None:
         sa.Column("prob_real", sa.Float(), nullable=False),
         sa.Column("model_type", sa.String(length=64), nullable=False),
         sa.Column(
-            "requires_human_review", sa.Boolean(), nullable=False, server_default=sa.text("0")
+            "requires_human_review", sa.Boolean(), nullable=False, server_default=sa.text("false")
         ),
         sa.Column("created_at", sa.DateTime(), nullable=False),
     )
@@ -63,7 +63,7 @@ def upgrade() -> None:
         ),
         sa.Column("user_verdict", sa.String(length=32), nullable=False),
         sa.Column("comments", sa.Text(), nullable=True),
-        sa.Column("is_reviewed", sa.Boolean(), nullable=False, server_default=sa.text("0")),
+        sa.Column("is_reviewed", sa.Boolean(), nullable=False, server_default=sa.text("false")),
         sa.Column("created_at", sa.DateTime(), nullable=False),
     )
     op.create_index(
